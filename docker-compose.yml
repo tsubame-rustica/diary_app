@@ -1,0 +1,29 @@
+services:
+  db:
+    image: mysql:8.0
+    # Apple Silicon (M1/M2) Macの場合は以下をコメント解除してください
+    # platform: linux/x86_64
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: myapp_development
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+
+  web:
+    build: .
+    # サーバー再起動時にPIDファイルが残るエラーを防ぐ
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes:
+      - .:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PASSWORD: password
+
+volumes:
+  db-data:
